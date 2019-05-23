@@ -1,0 +1,4 @@
+include klc2layout/*.json
+include *.json
+include klc2layout/*.html
+recursive-include klc2layout/images *
