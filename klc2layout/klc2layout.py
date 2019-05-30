@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -
 #-------------------------------------------------------------------------------
 # Name:        klc2layout
-""" Purpose:     Assemble, massage and copy mp3 and artwork files to SD/USB.
-            Generating various playlist files."""
+""" Purpose:     Convert MSKLC files to SPKL, kmfl, (mac?), Keyman and generate documentaion."""
 #
 # Author:      marks
 #
-# Created:     27-04-2016
-# Copyright:   (c)2016 SIL international
+# Created:     24-05-2019
+# Copyright:   (c)2019 SIL international
 # Licence:     Creative Commons?
 #-------------------------------------------------------------------------------
 
@@ -43,14 +42,14 @@ def main():
         bundle_dir = os.path.dirname(os.path.abspath(__file__))
 
     gui = GuiCore(None) # see GuiCore's __init__ method
-    gui.title(' klc2layoutwizard v{}'.format(THIS_VERSION))
+    gui.title(' klc2layout v{}'.format(THIS_VERSION))
 
     if platform.system() == 'Windows':
         gui.wm_iconbitmap(os.path.normpath((\
-                                    resource_filename(__name__, 'mainc.ico'))))
+                                    resource_filename(__name__, 'mainq.ico'))))
     elif platform.system() == 'Linux':
         img = PhotoImage(\
-                        file=(resource_filename(__name__, 'images/mainc.png')))
+                        file=(resource_filename(__name__, 'images/mainq.png')))
 #        img = PhotoImage(file=(get_script_directory() + '/images/mainc.png'))
         gui.tk.call('wm', 'iconphoto', gui._w, img)
     else:
