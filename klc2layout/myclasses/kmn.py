@@ -10,7 +10,9 @@
 #-------------------------------------------------------------------------------
 #!/usr/bin/env python
 #import klc
-from unicodedata import normalize
+from unicodedata import normalize, name, category
+from pathlib import Path
+from lxml import etree
 
 
 ScanCode = {0x02:"K_1",\
@@ -88,6 +90,11 @@ Nmodifier = ["NCAPS ", \
     "CAPS ",\
     "CAPS SHIFT "]
 
+States = {'':'', \
+          'SHIFT':'S', \
+          'CTRL':'C', \
+          'ALT':'A'}
+
 def kmn_it(klc, kmn_file, iconIn, _normalization="NFC"):
     dko = {}
     if "DESCRIPTIONS" in klc.klc:
@@ -143,7 +150,10 @@ def kmn_it(klc, kmn_file, iconIn, _normalization="NFC"):
                     dkout = ""
                     for key in normout:
                         dkout += " U+{0:04x}".format(ord(key))
-                    kmn_file.write("deadkey(dk{0}) + [{1}{2}]\t>\t{3}\n".format(str(dknum), abase, ScanCode[achar[0]], dkout.strip() ))
+                    kmn_file.write("deadkey(dk{0}) + [{1}{2}]\t>\t{3}\n"
+                                                       .format(str(dknum), 
+                                           abase, ScanCode[achar[0]], 
+                                           dkout.strip() ))
 
     kmn_file.write("\nc setup 'simple' keys\n")
     for pkl in klc.spkl:
@@ -158,15 +168,80 @@ def kmn_it(klc, kmn_file, iconIn, _normalization="NFC"):
             if pkl[3 + j][:2] == 'dk':
                 pass
             elif i == 1:
-                kmn_file.write(normalize(_normalization, "+ [{0}{1}]\t>\tU+{2:04x}\n".format(abase, ScanCode[int(pkl[0][2:], 16)], ord(pkl[3 + j]))))
+                kmn_file.write(normalize(_normalization, 
+                                         "+ [{0}{1}]\t>\tU+{2:04x}\n"
+                                                         .format(abase, 
+                                        ScanCode[int(pkl[0][2:], 16)], 
+                                        ord(pkl[3 + j]))))
             elif i > 2:
-                dout = "+ [{0} {1}]\t>\t".format(abase, ScanCode[int(pkl[0][2:], 16)])
+                dout = "+ [{0} {1}]\t>\t".format(abase, 
+                                                 ScanCode[int(pkl[0][2:], 16)])
                 for char in pkl[3 + j][1:]:
                     dout = dout + " U+{0:04x}".format(ord(char))
                 kmn_file.write(normalize(_normalization, dout + "\n"))
 
     kmn_file.write("")
     kmn_file.close()
+    
+class Kmn():
+    def __init__(self, kmnpath):
+        #assumes pathobject to kmn file
+        if kmnpath.exists() and kmnpath.is_file():
+            self.kmn = dict()
+            self.kvks = dict()
+            self.kmn = self._loadkmn(kmnpath.read_text(encoding='utf-8'))
+            #assumes kvks file has same stem as kmn file
+            self.kvks = self._loadkvks(kmnpath.with_suffix('.kvks')
+                                                  .read_text(encoding='utf-8'))
+            self.names = self._makenames()
+
+    def _loadkmn(self, kmnstr):
+        lines = kmnstr.split()
+        for aline in lines:
+            #assumes no deadkeys and only one group
+            #and so ignores 'bfegi', 'group', nomatch(), 
+            #blank lines and 'c' - comments
+            #assumes physical layout with virtual keys
+            if 'store(&' in aline[0:7]:
+                bit = aline.split()
+                self.kmn[bit[0][7:-1]] = bit[1][1:-1]
+            elif '+' in aline[0]:
+                lhs, rhs = aline.split('>')
+                svk = lhs.split('[')[1].split(']')
+                bits = svk.split()
+                state = self._states(''.join(bits[0:-1]))
+                # if len(state) == 0:
+                #     state = ''
+                vk = bits[-1]
+                #rhs is assumed to be sequence of one or more
+                #unicode codepoints in form U+NNNN
+                # if not self.kmn[vk]:
+                #     self.kmn[vk] = dict()
+                # self.kmn[vk][state] = rhs
+                if not self.kmn[state]:
+                    self.kmn[state] = dict()
+                self.kmn[state][vk] = rhs
+            else:
+                #skip line
+                pass
+
+        
+    def _makenames(self):
+        """build names table and save as json merging with names.json"""
+        
+        pass          
+                
+    def _states(astr):
+        result = ''
+        if 'SHIFT' in astr:
+            result += 'S'
+        if 'CTRL' in astr:
+            result += 'C'
+        if 'ALT' in astr:
+            result += 'A'
+        return result
+                    
+        
 
 def main():
     pass

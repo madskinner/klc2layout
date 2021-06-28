@@ -19,7 +19,7 @@ import codecs
 #import pickle
 from urllib.parse import urlparse
 import json
-#import re
+import re
 from tkinter import font, Tk, filedialog, messagebox, StringVar, \
                     IntVar, NO, Text, FALSE, Menu
 from tkinter.ttk import Button, Checkbutton, Entry, Frame, Label, LabelFrame, \
@@ -29,8 +29,9 @@ from tkinter.ttk import Button, Checkbutton, Entry, Frame, Label, LabelFrame, \
 #import ast
 #import psutil
 from PIL import Image, ImageTk
+from pathlib import Path
 #from lxml import etree
-#from unidecode import unidecode
+from unidecode import unidecode
 #
 #from .myconst.audio import AUDIO
 #from .myconst.regexs import FIND_LEADING_DIGITS, FIND_LEADING_ALPHANUM, \
@@ -39,7 +40,9 @@ from PIL import Image, ImageTk
 #from .myconst.readTag import IDIOT_TAGS, READ_TAG_INFO, HASH_TAG_ON
 #
 from .myconst.therest import THIS_VERSION, PRJ_JSON
+from .myconst.tags import SET_TAGS, TRIM_TAG
 from .tooltip import CreateToolTip
+from .touch import Touch
 #from .threads import MyThread
 #from .backend import Backend
 from .klc import Klc
@@ -376,6 +379,7 @@ class GuiCore(Tk):
         self.set_field = StringVar()
         self.spklDir = StringVar()
         self.kmflDir = StringVar()
+        self.f7ktl = StringVar()
 
     def _initialize_main_window_menu(self, lang='en-US'):
         """initialize the menubar on the main window"""
@@ -435,6 +439,7 @@ class GuiCore(Tk):
         #  additional options for featurephone specific locations for playlists
         self.f5 = Frame(self.n)
         self.f6 = Frame(self.n)   # Lock SD card
+        self.f7 = Frame(self.n)   # Make help files
 
         self.n.add(self.f0, text=self.LOCALIZED_TEXT[lang]['Project name'])
         self.n.add(self.f1, \
@@ -445,6 +450,7 @@ class GuiCore(Tk):
         self.n.add(self.f4, text=self.LOCALIZED_TEXT[lang]["Make Mac folder"])
         self.n.add(self.f5, text=self.LOCALIZED_TEXT[lang]["Keyman"])
         self.n.add(self.f6, text=self.LOCALIZED_TEXT[lang]['???'])
+        self.n.add(self.f7, text=self.LOCALIZED_TEXT[lang]['Make help files'])
 
         self.n.hide(1)
         self.n.hide(2)
@@ -452,6 +458,7 @@ class GuiCore(Tk):
         self.n.hide(4)
         self.n.hide(5)
         self.n.hide(6)
+        #self.n.hide(7) #always available
 
 
     def _initialize_main_window(self, lang='en-US'):
@@ -746,6 +753,41 @@ class GuiCore(Tk):
 
     def _initialize_f6(self, lang):
         """The lock unlock SD card tab, to be implemented?"""
+        pass
+
+    def _initialize_f7(self, lang):
+        """initialize Make/Remake help files tab from project ktl/kmn/kvks.
+           Has text box and browse button to ktl file,
+           plus OK - Make/Remake help files, creating any necessary folders.
+           All help files created relative to position of ktl file.
+           A common file name and location assumed for
+           ktl, kmn and kvks files, only the extensions differ."""
+        self.lblf7Into = Label(self.f7, \
+                            text=self.LOCALIZED_TEXT[lang]["f7Intro"], \
+                            anchor='w', justify='left', wraplength=600)
+        #Source Directory -label, entrybox, browse button
+        self.lblf7ktl = Label(self.f1, \
+                        text=self.LOCALIZED_TEXT[lang]['f7ktl'],\
+                        anchor='w', justify='left')
+        self.lblf7ktl.grid(column=0, row=1, columnspan=1, padx=5, pady=5, \
+                          sticky='w')
+        self.lblf7ktl = Label(self.f1, textvariable=self.f7ktl, \
+                             anchor='w', justify='left')
+        self.lblf7ktl.grid(column=1, row=1, columnspan=3, padx=5, pady=5, \
+                          sticky='w')
+        self.btnf7Browse = Button(self.f1, text="...", \
+                                             command=self._on_f7_browse, \
+                                             style='highlight.TButton')
+        self.btnf7Browse.grid(column=4, row=1, padx=5, pady=5, sticky='news')
+        self.btnf7Browse_ttp = CreateToolTip(self.f1, \
+                                          self.LOCALIZED_TEXT[lang]['f7Browse_ttp'])
+
+        self.btnf7MakeHelpl = Button(self.f7, \
+                                     text=self.LOCALIZED_TEXT[lang]["Make help files"], \
+                                     command=self._on_f7_make_help, \
+                                     style='highlight.TButton')
+        self.btnf7MakeHelp.grid(column=3, row=20, columnspan=2, padx=5, pady=5, \
+                                                                 sticky='news')
         pass
 
     def _on_f0del_project(self):
@@ -1049,7 +1091,15 @@ class GuiCore(Tk):
         self.n.add(self.f6)
         self.n.select(6)
 
+    def _on_f7_browse(self):
+        """browse to ktl file and load path into self.f7ktl"""
+        pass
 
+    def _on_f7_make_help(self):
+        """makes keyman help files"""
+        touch = Touch(Path(self.f7ktl.get()))
+        touch.create_help_for_single_device("phone")
+        pass
 
     def _on_add_item(self):
         """ add an item(mp3 file) to the selected collection"""
@@ -1412,3 +1462,7 @@ def folder_size(top):
 def forward_slash_path(apath):
     '''replace all backslashes with forward slash'''
     return '/'.join(apath.split('\\'))
+
+def sort_key_for_filenames(filename):
+    return filename
+    pass

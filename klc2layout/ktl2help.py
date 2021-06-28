@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:        klc2layout
 """ Purpose:     Convert MSKLC files to SPKL, kmfl, (mac?), Keyman and generate documentaion."""
 #
@@ -8,7 +8,7 @@
 # Created:     24-05-2019
 # Copyright:   (c)2019 SIL international
 # Licence:     Creative Commons?
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 import sys
@@ -18,13 +18,14 @@ import platform
 from tkinter import messagebox, PhotoImage
 
 from pkg_resources import resource_filename
+# from klc2layout.myclasses.myconst.therest import THIS_VERSION
+# from klc2layout.myclasses.gui import GuiCore
+from myclasses.myconst.therest import KTL_VERSION
+from myclasses.guiktl import GuiKtl
+
 if __name__ == '__main__' and __package__ is None:
-    os.sys.path.append(os.path.dirname(os.path.dirname(\
+    os.sys.path.append(os.path.dirname(os.path.dirname(
                                                 os.path.abspath(__file__))))
-#from klc2layout.myclasses.myconst.therest import THIS_VERSION
-#from klc2layout.myclasses.gui import GuiCore
-from myclasses.myconst.therest import THIS_VERSION
-from myclasses.gui import GuiCore
 
 def hello_world():
     '''idiot test function'''
@@ -43,22 +44,22 @@ def main():
         # we are running in a normal Python environment
         bundle_dir = os.path.dirname(os.path.abspath(__file__))
 
-    gui = GuiCore(None) # see GuiCore's __init__ method
-    gui.title(' klc2layout v{}'.format(THIS_VERSION))
+    gui = GuiKtl(None)  # see GuiCore's __init__ method
+    gui.title(' klc2layout v{}'.format(KTL_VERSION))
 
     if platform.system() == 'Windows':
-        gui.wm_iconbitmap(os.path.normpath((\
+        gui.wm_iconbitmap(os.path.normpath((
                                     resource_filename(__name__, 'mainq.ico'))))
     elif platform.system() == 'Linux':
-        img = PhotoImage(\
+        img = PhotoImage(
                         file=(resource_filename(__name__, 'images/mainq.png')))
 #        img = PhotoImage(file=(get_script_directory() + '/images/mainc.png'))
         gui.tk.call('wm', 'iconphoto', gui._w, img)
     else:
-        messagebox.showwarning('Warning', "Help I've been kidnaped by {}!!!".\
-                               format(platform.system()))
-
+        messagebox.showwarning('Warning',
+                               f"Help I've been kidnaped by {platform.system()}!!!")
     gui.mainloop()
+
 
 if __name__ == '__main__':
     main()
